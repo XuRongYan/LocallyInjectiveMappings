@@ -6,7 +6,7 @@
 
 ### 2 Problem Statement
 
-定义映射$f: \mathbb{R}^{3} \rightarrow \mathbb{R}^{3}$，该映射必须保证为单射，即没有发生翻转的四面体
+定义映射$ f: \mathbb{R}^{3} \rightarrow \mathbb{R}^{3} $，该映射必须保证为单射，即没有发生翻转的四面体
 
 ### 3 Method
 
