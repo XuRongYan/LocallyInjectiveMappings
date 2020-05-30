@@ -14,7 +14,7 @@
 $$
 \underset{\mathbf{v}}{\operatorname{argmin}} E(\mathbf{v})+\alpha\|\mathbf{C} \mathbf{v}-\mathbf{d}\|^{2} \tag{1}
 $$
-其中$E(\mathbf{v})$为任意的能量，第二项为位置约束，$\alpha \geqslant$ 0为位置约束的权重,，$\mathbf{C}$取单位矩阵，而该方法在该模型的基础上加上一个障碍函数，障碍函数在一个元素的面积或者体积逼近0时变得无穷大来惩罚翻转：
+其中$E(\mathbf{v})$为任意的能量，第二项为位置约束，$ \alpha \geqslant 0 $ 为位置约束的权重,，$\mathbf{C}$取单位矩阵，而该方法在该模型的基础上加上一个障碍函数，障碍函数在一个元素的面积或者体积逼近0时变得无穷大来惩罚翻转：
 $$
 \underset{\mathbf{v}}{\operatorname{argmin}} \quad E(\mathbf{v})+\alpha\|\mathbf{C} \mathbf{v}-\mathbf{d}\|^{2}+\beta \sum_{j \in \mathcal{E}} \phi_{j}\left(c_{j}(\mathbf{v})\right) \tag{2}
 $$
@@ -22,7 +22,7 @@ $$
 $$
 c_{j}(\mathbf{v})=\lambda_{j}(\mathbf{v})-\varepsilon \tag{3}
 $$
-$\lambda_{j}(\mathbf{v})$为元素的体积/面积，而$\varepsilon = 10^{-5} \cdot \min_{j}{\lambda_{j}(\mathbf{v}_{0})}$，$\lambda_{j}(\mathbf{v}_{0})$为初始状态下模型第j个元素的体积/面积。障碍函数$\phi_j$是由三次多项式$g_{j}$，该式子满足$g_{j}(0)=0, \quad g_{j}\left(s_{j}\right)=1, \quad g_{j}^{\prime}\left(s_{j}\right)=0, \quad g_{j}^{\prime \prime}\left(s_{j}\right)=0$；$g_{j}$可表示为：
+$ \lambda_{j}(\mathbf{v}) $为元素的体积/面积，而$ \varepsilon = 10^{-5} \cdot \min_{j}{\lambda_{j}(\mathbf{v}_{0})} $，$ \lambda_{j}(\mathbf{v}_{0}) $为初始状态下模型第j个元素的体积/面积。障碍函数$\phi_j$是由三次多项式$g_{j}$，该式子满足$g_{j}(0)=0, \quad g_{j}\left(s_{j}\right)=1, \quad g_{j}^{\prime}\left(s_{j}\right)=0, \quad g_{j}^{\prime \prime}\left(s_{j}\right)=0$；$g_{j}$可表示为：
 $$
 g_{j}(x)=\frac{1}{s_{j}^{3}} x^{3}-\frac{3}{s_{j}^{2}} x^{2}+\frac{3}{s_{j}} x \tag{4}
 $$
