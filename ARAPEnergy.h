@@ -33,9 +33,16 @@ public:
     ARAPEnergy(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &v, const Eigen::Matrix3Xi &f,
                const std::vector<Eigen::Matrix<Scalar, 2, 3>> &idealElems, MODE mode = TRANSPOSE);
 
+    void rebuild(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &V, const Eigen::Matrix3Xi &F, MODE mode = TRANSPOSE);
+
+    void rebuild(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &v, const Eigen::Matrix3Xi &f,
+                 const std::vector<Eigen::Matrix<Scalar, 2, 3>> &idealElems, MODE mode = TRANSPOSE);
+
     int precompute();
 
     void computeLocalR(std::vector<Eigen::Matrix<Scalar, 2, 2>> &R);
+
+    const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& getRCalc() const;
 
     const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &getV() const;
 
@@ -86,6 +93,8 @@ private:
     void computeAreas();
 
     void computeGradientOperator();
+
+    void reset();
 
 };
 

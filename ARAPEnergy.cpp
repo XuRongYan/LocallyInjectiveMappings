@@ -12,14 +12,37 @@ template<class Scalar>
 ARAPEnergy<Scalar>::ARAPEnergy(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &V,
                                const Eigen::Matrix3Xi &F, MODE mode):V_(V),
                                                                      F_(F),
-                                                                     mode(mode) {}
+                                                                     mode(mode) {
+}
 
 template<class Scalar>
-ARAPEnergy<Scalar>::ARAPEnergy(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &v, const Eigen::Matrix3Xi &f,
-                               const std::vector<Eigen::Matrix<Scalar, 2, 3>> &idealElems, MODE mode):V_(v), F_(f),
-                                                                                                      ideal_elems_(
-                                                                                                              idealElems),
-                                                                                                      mode(mode) {}
+ARAPEnergy<Scalar>::ARAPEnergy(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &v,
+                               const Eigen::Matrix3Xi &f,
+                               const std::vector<Eigen::Matrix<Scalar, 2, 3>> &idealElems,
+                               MODE mode):V_(v), F_(f),
+                                          ideal_elems_(idealElems),
+                                          mode(mode) {
+}
+
+template<class Scalar>
+void ARAPEnergy<Scalar>::rebuild(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &V, const Eigen::Matrix3Xi &F,
+                                 ARAPEnergy::MODE mode) {
+    reset();
+    this->V_ = V;
+    this->F_ = F;
+    this->mode = mode;
+}
+
+template<class Scalar>
+void ARAPEnergy<Scalar>::rebuild(const Eigen::Matrix<Scalar, 3, Eigen::Dynamic> &v, const Eigen::Matrix3Xi &f,
+                                 const std::vector<Eigen::Matrix<Scalar, 2, 3>> &idealElems, ARAPEnergy::MODE mode) {
+    reset();
+    this->V_ = v;
+    this->F_ = f;
+    this->mode = mode;
+    this->ideal_elems_ = idealElems;
+
+}
 
 template<class Scalar>
 void ARAPEnergy<Scalar>::computeLocalR(std::vector<Eigen::Matrix<Scalar, 2, 2>> &R) {
@@ -184,6 +207,42 @@ template<class Scalar>
 void ARAPEnergy<Scalar>::setF(const Eigen::Matrix3Xi &f) {
     F_ = f;
 }
+
+template<class Scalar>
+void ARAPEnergy<Scalar>::reset() {
+    G_.setZero();
+    areas.clear();
+    R_.clear();
+    ideal_elems_.clear();
+    inv_deltas_.clear();
+}
+
+template<class Scalar>
+const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &ARAPEnergy<Scalar>::getRCalc() const {
+    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> R;
+    if (mode == TRANSPOSE) {
+        R.resize(2 * F_.cols(), 2);
+        for (size_t i = 0; i < R_.size(); i++) {
+            for (size_t j = 0; j < 2; j++) {
+                for (size_t k = 0; k < 3; k++) {
+                    R(2 * i + j, k) = R[i](j, k);
+                }
+            }
+        }
+    } else {
+        R.resize(4 * F_.cols());
+        for (size_t i = 0; i < R_.size(); i++) {
+            for (size_t j = 0; j < 2; j++) {
+                for (size_t k = 0; k < 3; k++) {
+                    R(4 * i + 2 * j + k) = R[i](j, k);
+                }
+            }
+        }
+    }
+    return R;
+}
+
+
 
 
 

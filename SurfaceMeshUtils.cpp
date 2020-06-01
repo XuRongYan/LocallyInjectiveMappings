@@ -3,6 +3,7 @@
 //
 
 #include "SurfaceMeshUtils.h"
+#include "EigenUtils.h"
 
 namespace xry_mesh {
 
