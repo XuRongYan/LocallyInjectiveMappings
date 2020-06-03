@@ -91,11 +91,21 @@ void LIM::computeRigidHessian() {
 }
 
 void LIM::computeBarriesJacobian() {
-
+    // TODO M每次只算一次
+    J_barries.setZero();
+    for (const auto &f : mesh_.faces()) {
+        Eigen::SparseMatrix<Scalar> M = computeM(f);
+        J_barries += weight1[f.idx()] * lambdaPrime(M);
+    }
 }
 
 void LIM::computeBarriesHessian() {
-
+    H_barries.setZero();
+    for (const auto &f : mesh_.faces()) {
+        Eigen::SparseMatrix<Scalar> M = computeM(f);
+        H_barries += weight2[f.idx()] * lambdaPrime(M) * lambdaPrime(M).transpose()
+                     + weight1[f.idx()] * lambdaPrime2(M);
+    }
 }
 
 void LIM::computePosConstrainDi() {
@@ -114,8 +124,30 @@ void LIM::computeTi(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> 
     t_i_ = C * Vt_calc_ + 1.0 / (1 + mumu) * (d_i_ - C * Vt_calc_);
 }
 
-void LIM::computeM(const std::vector<Scalar> &weights) {
-
+Eigen::SparseMatrix<LIM::Scalar> LIM::computeM(const Surface_Mesh::SurfaceMesh::Face &f) {
+    std::vector<Surface_Mesh::SurfaceMesh::Vertex> points;
+    for (const auto &v : mesh_.vertices(f)) {
+        points.emplace_back(v);
+    }
+    Eigen::SparseMatrix<Scalar> M(Vt_calc_.size(), Vt_calc_.size());
+    std::vector<Eigen::Triplet<Scalar>> triplets;
+    for (size_t i = 0; i < 2; i++) {
+        triplets.emplace_back(2 * points[0].idx() + i, 2 * points[0].idx() + i, 1);
+    }
+    for (size_t i = 0; i < 2; i++) {
+        triplets.emplace_back(2 * points[0].idx() + i, 2 * points[1].idx() + i, 0.5);
+        triplets.emplace_back(2 * points[1].idx() + i, 2 * points[0].idx() + i, 0.5);
+    }
+    for (size_t i = 0; i < 2; i++) {
+        triplets.emplace_back(2 * points[0].idx() + i, 2 * points[2].idx() + i, 0.5);
+        triplets.emplace_back(2 * points[2].idx() + i, 2 * points[0].idx() + i, 0.5);
+    }
+    for (size_t i = 0; i < 2; i++) {
+        triplets.emplace_back(2 * points[1].idx() + i, 2 * points[2].idx() + i, 0.5);
+        triplets.emplace_back(2 * points[2].idx() + i, 2 * points[1].idx() + i, 0.5);
+    }
+    M.setFromTriplets(triplets.begin(), triplets.end());
+    return M;
 }
 
 void LIM::computeEpsilon() {
@@ -182,14 +214,14 @@ LIM::Scalar LIM::gPrime2(LIM::Scalar x) {
            + 6.0 / std::pow(s_j_, 2);
 }
 
-Eigen::Matrix<LIM::Scalar, Eigen::Dynamic, Eigen::Dynamic> LIM::lambdaPrime() const {
-    Eigen::SparseMatrix<Scalar> M_t = M_.transpose();
-    return 0.5 * (M_ + M_t) * Vt_calc_;
+Eigen::SparseMatrix<LIM::Scalar> LIM::lambdaPrime(const Eigen::SparseMatrix<Scalar> &M) const {
+    Eigen::SparseMatrix<Scalar> M_t = M.transpose();
+    return (0.5 * (M + M_t) * Vt_calc_).sparseView();
 }
 
-Eigen::Matrix<LIM::Scalar, Eigen::Dynamic, Eigen::Dynamic> LIM::lambdaPrime2() const {
-    Eigen::SparseMatrix<Scalar> M_t = M_.transpose();
-    return 0.5 * (M_ + M_t);
+Eigen::SparseMatrix<LIM::Scalar> LIM::lambdaPrime2(const Eigen::SparseMatrix<Scalar> &M) const {
+    Eigen::SparseMatrix<Scalar> M_t = M.transpose();
+    return 0.5 * (M + M_t);
 }
 
 LIM::Scalar LIM::c(const Eigen::Matrix<Scalar, 3, 1> &p1, const Eigen::Matrix<Scalar, 3, 1> &p2,

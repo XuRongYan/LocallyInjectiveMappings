@@ -78,7 +78,7 @@ private:
 
     void computeEpsilon();
 
-    void computeM(const std::vector<Scalar> &weights);
+    Eigen::SparseMatrix<Scalar> computeM(const Surface_Mesh::SurfaceMesh::Face &f);
 
     void computeW1();
 
@@ -99,9 +99,9 @@ private:
 
     Scalar gPrime2(Scalar x);
 
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> lambdaPrime() const;
+    Eigen::SparseMatrix<Scalar> lambdaPrime(const Eigen::SparseMatrix<Scalar> &M) const;
 
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> lambdaPrime2() const;
+    Eigen::SparseMatrix<Scalar> lambdaPrime2(const Eigen::SparseMatrix<Scalar> &M) const;
 
     Scalar c(const Eigen::Matrix<Scalar, 3, 1> &p1,
              const Eigen::Matrix<Scalar, 3, 1> &p2,
