@@ -6,8 +6,11 @@
 
 #include <map>
 
+#include <dbg.h>
+
 #include "SurfaceMeshUtils.h"
 #include "EigenUtils.h"
+
 
 LIM::LIM() {}
 
@@ -16,7 +19,7 @@ LIM::LIM(const Surface_Mesh::SurfaceMesh &mesh) : mesh_(mesh) {
 }
 
 LIM::LIM(const Surface_Mesh::SurfaceMesh &mesh,
-         const std::vector<std::pair<int, Eigen::Matrix3f>> &posConstrains)
+         const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &posConstrains)
         : mesh_(mesh), pos_constrains_(posConstrains) {
 
 }
@@ -28,7 +31,7 @@ void LIM::rebuild(const Surface_Mesh::SurfaceMesh &mesh) {
 }
 
 void LIM::rebuild(const Surface_Mesh::SurfaceMesh &mesh,
-                  const std::vector<std::pair<int, Eigen::Matrix3f>> &posConstrains) {
+                  const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &posConstrains) {
     reset();
     this->mesh_ = mesh;
     this->pos_constrains_ = posConstrains;
@@ -57,28 +60,32 @@ void LIM::solve() {
 }
 
 void LIM::computePosHessian() {
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> C(Vt_calc_.size(), Vt_calc_.size());
+    Eigen::SparseMatrix<Scalar> C(Vt_calc_.size(), Vt_calc_.size());
     C.setIdentity();
     H_pos_ = 2 * C.transpose() * C;
 }
 
 void LIM::computePosJacobian() {
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> C(Vt_calc_.size(), Vt_calc_.size());
+    Eigen::SparseMatrix<Scalar> C(Vt_calc_.size(), Vt_calc_.size());
     C.setIdentity();
     computePosConstrainDi();
     computeTi(C);
-    J_pos_ = 2 * C.transpose() * C * Vt_calc_ - 2 * C.transpose() * t_i_;
+    Eigen::SparseMatrix<Scalar> Ct = C.transpose();
+    auto J_pos_dense = 2 * Ct * C * Vt_calc_ - 2 * Ct * t_i_;
+    J_pos_ = J_pos_dense.sparseView();
 }
 
 void LIM::computeRigidJacobian() {
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> G, R;
+    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> R;
+    Eigen::SparseMatrix<Scalar> G;
     G = arap_energy_.getG();
     R = arap_energy_.getRCalc();
     J_rigid_ = 2 * G.transpose() * G - 2 * G.transpose() * R;
+
 }
 
 void LIM::computeRigidHessian() {
-    Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> G;
+    Eigen::SparseMatrix<Scalar> G;
     G = arap_energy_.getG();
     H_rigid_ = G.transpose() * G;
 }
@@ -96,7 +103,7 @@ void LIM::computePosConstrainDi() {
     d_i_.setZero();
     for (const auto &pair : pos_constrains_) {
         for (size_t j = 0; j < 3; j++) {
-            d_i_[3 * pair.first + j] = pair.second[j];
+            d_i_[3 * pair.first + j] = pair.second(j, 0);
         }
     }
 }
@@ -187,7 +194,7 @@ Eigen::Matrix<LIM::Scalar, Eigen::Dynamic, Eigen::Dynamic> LIM::lambdaPrime2() c
 
 LIM::Scalar LIM::c(const Eigen::Matrix<Scalar, 3, 1> &p1, const Eigen::Matrix<Scalar, 3, 1> &p2,
                    const Eigen::Matrix<Scalar, 3, 1> &p3) {
-    return xry_mesh::computeArea(p1, p2, p3);
+    return xry_mesh::computeArea<Scalar>(p1, p2, p3);
 }
 
 //-------------------------------------------getter and setter---------------------------------------//
@@ -200,11 +207,11 @@ void LIM::setMesh(const Surface_Mesh::SurfaceMesh &mesh) {
     mesh_ = mesh;
 }
 
-const std::vector<std::pair<int, Eigen::Matrix3f>> &LIM::getPosConstrains() const {
+const std::vector<std::pair<int, Eigen::Matrix<LIM::Scalar, 3, 1>>> &LIM::getPosConstrains() const {
     return pos_constrains_;
 }
 
-void LIM::setPosConstrains(const std::vector<std::pair<int, Eigen::Matrix3f>> &posConstrains) {
+void LIM::setPosConstrains(const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &posConstrains) {
     pos_constrains_ = posConstrains;
 }
 

@@ -6,6 +6,7 @@
 #define LOCALLYINJECTIVEMAPPINGS_EIGENUTILS_H
 
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 namespace xry_mesh {
 
@@ -17,7 +18,16 @@ namespace xry_mesh {
      */
     template<class Scalar>
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>
-    vt2v(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &vt);
+    vt2v(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &vt) {
+        const int dim = vt.cols();
+        Eigen::Matrix<Scalar, Eigen::Dynamic, 1> v(dim * vt.rows());
+        for (size_t i = 0; i < vt.rows(); i++) {
+            for (size_t j = 0; j < dim; j++) {
+                v[3 * i + j] = vt(i, j);
+            }
+        }
+        return v;
+    }
 
     /**
      * 将v矩阵转换为vt矩阵
@@ -27,7 +37,27 @@ namespace xry_mesh {
      */
     template<class Scalar>
     Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>
-    v2vt(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &v, int dim);
+    v2vt(const Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &v, int dim) {
+        assert(v.rows() % dim == 0);
+        Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> vt(v.rows() / dim, dim);
+        for (size_t i = 0; i < v.rows(); i += dim) {
+            for (size_t j = 0; j < dim; j++) {
+                vt(i / dim, j) = v[i + j];
+            }
+        }
+        return vt;
+    }
+
+    template<class Scalar>
+    std::vector<Eigen::Triplet<Scalar>> sparse2triplet(const Eigen::SparseMatrix<Scalar> &A) {
+        std::vector<Eigen::Triplet<Scalar>> triplets;
+        for (size_t i = 0; i < A.outerSize(); i++) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator it(A, i); it; it++) {
+                triplets.emplace_back(it.row(), it.col(), it.value());
+            }
+        }
+        return triplets;
+    }
 
 
 } // namespace xry_mesh

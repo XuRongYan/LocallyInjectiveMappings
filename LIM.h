@@ -25,18 +25,18 @@ public:
     LIM(const Surface_Mesh::SurfaceMesh &mesh);
 
     LIM(const Surface_Mesh::SurfaceMesh &mesh,
-        const std::vector<std::pair<int, Eigen::Matrix3f>> &posConstrains);
+        const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &posConstrains);
 
     void rebuild(const Surface_Mesh::SurfaceMesh &mesh);
 
     void rebuild(const Surface_Mesh::SurfaceMesh &mesh,
-                 const std::vector<std::pair<int, Eigen::Matrix3f>> &posConstrains);
+                 const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &posConstrains);
 
     void solve();
 
-    const std::vector<std::pair<int, Eigen::Matrix3f>> &getPosConstrains() const;
+    const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &getPosConstrains() const;
 
-    void setPosConstrains(const std::vector<std::pair<int, Eigen::Matrix3f>> &posConstrains);
+    void setPosConstrains(const std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> &posConstrains);
 
     const ARAPEnergy<Surface_Mesh::Scalar> &getArapEnergy() const;
 
@@ -52,7 +52,7 @@ private:
     Eigen::Matrix<Scalar, 3, Eigen::Dynamic> V_;
     Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vt_calc_, d_i_, t_i_; //用于计算的v向量
     Eigen::Matrix3Xi F_;
-    std::vector<std::pair<int, Eigen::Matrix3f>> pos_constrains_;
+    std::vector<std::pair<int, Eigen::Matrix<Scalar, 3, 1>>> pos_constrains_;
     ARAPEnergy<Surface_Mesh::Scalar> arap_energy_;
     Eigen::SparseMatrix<Scalar> H_rigid_, H_pos_, H_barries, J_rigid_, J_pos_, J_barries; //Hessian and Jacobian
     Eigen::SparseMatrix<Scalar> M_; //面积公式的二次型矩阵
