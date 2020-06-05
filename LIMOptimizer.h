@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+#include "dbg.h"
 #include "EigenUtils.h"
 
 template<typename Scalar>
@@ -48,6 +49,7 @@ public:
             lineSearchSigma(p_i, sigma_);
             Vt_i_ = Vt_i_ - sigma_ * p_i;
             err1 = funcError_(Vt_i_);
+            dbg(iter, err1);
             iter++;
         }
         return Vt_i_;
@@ -82,6 +84,7 @@ private:
         } else {
             while (!xry_mesh::isSparseMatrixInvertible(matrix)) {
                 mu_i *= 2;
+
             }
             mu_i /= 2;
         }
