@@ -59,6 +59,11 @@ namespace xry_mesh {
         return triplets;
     }
 
+    template<typename Scalar>
+    bool isSparseMatrixInvertible(Eigen::SparseMatrix<Scalar> &matrix) {
+        Eigen::FullPivLU<Eigen::SparseMatrix<Scalar>> lu(matrix);
+        return lu.isInvertible();
+    }
 
 } // namespace xry_mesh
 
